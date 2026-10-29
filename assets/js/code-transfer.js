@@ -1,26 +1,58 @@
 (function () {
   'use strict';
 
-  var input = document.getElementById('code-input');
+  var config = window.DailyDeskSupabase || {};
+  var factory = window.supabase;
+  var client = factory && config.url && config.publishableKey
+    ? factory.createClient(config.url, config.publishableKey)
+    : null;
+  var snippets = [];
+  var activeId = null;
+  var dirty = false;
+  var feedbackTimer;
+
+  var list = document.getElementById('snippet-list');
+  var total = document.getElementById('snippet-total');
+  var search = document.getElementById('snippet-search');
+  var titleInput = document.getElementById('snippet-title');
+  var languageInput = document.getElementById('snippet-language');
+  var codeInput = document.getElementById('code-input');
   var lineNumbers = document.getElementById('line-numbers');
   var lineCount = document.getElementById('line-count');
   var charCount = document.getElementById('char-count');
   var byteCount = document.getElementById('byte-count');
   var feedback = document.getElementById('code-feedback');
+  var newButton = document.getElementById('new-snippet');
+  var saveButton = document.getElementById('save-snippet');
+  var deleteButton = document.getElementById('delete-snippet');
   var copyButton = document.getElementById('copy-code');
-  var pasteButton = document.getElementById('paste-code');
-  var clearButton = document.getElementById('clear-code');
-  var downloadButton = document.getElementById('download-code');
-  var shareButton = document.getElementById('share-code');
-  var feedbackTimer;
 
-  function getLineTotal(value) {
-    return value.length ? value.split('\n').length : 1;
+  function escapeHtml(value) {
+    return window.DailyDesk.escapeHtml(value);
+  }
+
+  function formatUpdatedAt(value) {
+    if (!value) return '';
+    return new Intl.DateTimeFormat('zh-CN', {
+      month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit'
+    }).format(new Date(value));
+  }
+
+  function setFeedback(message, tone, persistent) {
+    clearTimeout(feedbackTimer);
+    feedback.textContent = message;
+    feedback.dataset.tone = tone || 'neutral';
+    if (!persistent && tone === 'success') {
+      feedbackTimer = setTimeout(function () {
+        feedback.textContent = activeId ? '已与云端同步' : '尚未保存';
+        feedback.dataset.tone = 'neutral';
+      }, 1800);
+    }
   }
 
   function renderStats() {
-    var value = input.value;
-    var lines = getLineTotal(value);
+    var value = codeInput.value;
+    var lines = value.length ? value.split('\n').length : 1;
     lineCount.textContent = lines;
     charCount.textContent = Array.from(value).length;
     byteCount.textContent = new TextEncoder().encode(value).length;
@@ -29,193 +61,172 @@
     }).join('\n');
   }
 
-  function setFeedback(message, tone) {
-    clearTimeout(feedbackTimer);
-    feedback.textContent = message;
-    feedback.dataset.tone = tone || 'neutral';
-    if (tone === 'success') {
-      feedbackTimer = setTimeout(function () {
-        feedback.textContent = input.value ? '内容保持原样' : '等待粘贴';
-        feedback.dataset.tone = 'neutral';
-      }, 1800);
-    }
-  }
-
-  async function writeClipboard(value) {
-    if (navigator.clipboard && window.isSecureContext) {
-      await navigator.clipboard.writeText(value);
+  function renderList() {
+    var keyword = search.value.trim().toLowerCase();
+    var filtered = snippets.filter(function (item) {
+      return !keyword || item.title.toLowerCase().includes(keyword) || item.language.toLowerCase().includes(keyword);
+    });
+    total.textContent = snippets.length + ' 个代码页面';
+    if (!filtered.length) {
+      list.innerHTML = '<div class="snippet-list-state">' + (snippets.length ? '没有匹配的代码' : '还没有代码，点击“新建代码”开始') + '</div>';
       return;
     }
-    var area = document.createElement('textarea');
-    area.value = value;
-    area.style.position = 'fixed';
-    area.style.opacity = '0';
-    document.body.appendChild(area);
-    area.select();
-    if (!document.execCommand('copy')) {
-      area.remove();
-      throw new Error('复制失败');
+    list.innerHTML = filtered.map(function (item) {
+      var active = item.id === activeId ? ' is-active' : '';
+      return '<button class="snippet-item' + active + '" type="button" data-id="' + escapeHtml(item.id) + '">' +
+        '<span class="snippet-item-title">' + escapeHtml(item.title) + '</span>' +
+        '<span class="snippet-item-meta"><span>' + escapeHtml(item.language) + '</span><span>' + escapeHtml(formatUpdatedAt(item.updated_at)) + '</span></span>' +
+        '</button>';
+    }).join('');
+  }
+
+  function setDirty() {
+    dirty = true;
+    setFeedback(activeId ? '有未保存的修改' : '尚未保存', 'neutral', true);
+  }
+
+  function syncUrl(id) {
+    var url = new URL(window.location.href);
+    if (id) url.searchParams.set('id', id);
+    else url.searchParams.delete('id');
+    history.replaceState(null, '', url);
+  }
+
+  function openSnippet(id) {
+    var item = snippets.find(function (snippet) { return snippet.id === id; });
+    if (!item) return;
+    activeId = item.id;
+    titleInput.value = item.title;
+    languageInput.value = item.language;
+    codeInput.value = item.content;
+    deleteButton.disabled = false;
+    dirty = false;
+    renderStats();
+    renderList();
+    setFeedback('已载入云端代码', 'success');
+    syncUrl(item.id);
+  }
+
+  function createNew() {
+    activeId = null;
+    titleInput.value = '';
+    languageInput.value = 'plaintext';
+    codeInput.value = '';
+    deleteButton.disabled = true;
+    dirty = false;
+    renderStats();
+    renderList();
+    setFeedback('新代码尚未保存', 'neutral', true);
+    syncUrl(null);
+    titleInput.focus();
+  }
+
+  async function loadSnippets() {
+    if (!client) {
+      list.innerHTML = '<div class="snippet-list-state error">云端配置加载失败</div>';
+      setFeedback('无法连接云端数据库', 'error', true);
+      return;
     }
-    area.remove();
+    var result = await client.from('code_snippets')
+      .select('id,title,language,content,created_at,updated_at')
+      .order('updated_at', { ascending: false });
+    if (result.error) {
+      list.innerHTML = '<div class="snippet-list-state error">云端读取失败，请稍后刷新</div>';
+      setFeedback('读取失败：' + result.error.message, 'error', true);
+      return;
+    }
+    snippets = result.data || [];
+    renderList();
+    var requestedId = new URLSearchParams(window.location.search).get('id');
+    if (requestedId && snippets.some(function (item) { return item.id === requestedId; })) openSnippet(requestedId);
+    else if (snippets.length) openSnippet(snippets[0].id);
+    else createNew();
+  }
+
+  async function saveSnippet() {
+    var title = titleInput.value.trim();
+    if (!title) {
+      setFeedback('请填写代码标题', 'error', true);
+      titleInput.focus();
+      return;
+    }
+    if (!client) return;
+    saveButton.disabled = true;
+    saveButton.textContent = '正在保存';
+    var payload = { title: title, language: languageInput.value, content: codeInput.value };
+    var result = activeId
+      ? await client.from('code_snippets').update(payload).eq('id', activeId).select().single()
+      : await client.from('code_snippets').insert(payload).select().single();
+    saveButton.disabled = false;
+    saveButton.textContent = '保存到云端';
+    if (result.error) {
+      setFeedback('保存失败：' + result.error.message, 'error', true);
+      return;
+    }
+    var saved = result.data;
+    snippets = snippets.filter(function (item) { return item.id !== saved.id; });
+    snippets.unshift(saved);
+    activeId = saved.id;
+    deleteButton.disabled = false;
+    dirty = false;
+    renderList();
+    setFeedback('已保存到公共云端', 'success');
+    syncUrl(saved.id);
+  }
+
+  async function deleteSnippet() {
+    if (!activeId || !client) return;
+    var current = snippets.find(function (item) { return item.id === activeId; });
+    if (!window.confirm('确定删除“' + (current ? current.title : '这段代码') + '”吗？此操作无法撤销。')) return;
+    deleteButton.disabled = true;
+    var result = await client.from('code_snippets').delete().eq('id', activeId);
+    if (result.error) {
+      deleteButton.disabled = false;
+      setFeedback('删除失败：' + result.error.message, 'error', true);
+      return;
+    }
+    snippets = snippets.filter(function (item) { return item.id !== activeId; });
+    setFeedback('代码已删除', 'success');
+    if (snippets.length) openSnippet(snippets[0].id);
+    else createNew();
   }
 
   async function copyCode() {
-    var value = input.value;
-    if (!value) {
-      setFeedback('请先粘贴代码', 'error');
-      input.focus();
+    if (!codeInput.value) {
+      setFeedback('当前没有可复制的代码', 'error', true);
       return;
     }
     try {
-      await writeClipboard(value);
-      copyButton.textContent = '已复制';
-      setFeedback('已按原内容复制', 'success');
-      setTimeout(function () { copyButton.textContent = '复制代码'; }, 1800);
+      await navigator.clipboard.writeText(codeInput.value);
     } catch (_) {
-      setFeedback('浏览器未允许复制，请手动选择代码', 'error');
+      codeInput.focus();
+      codeInput.select();
+      document.execCommand('copy');
     }
+    copyButton.textContent = '已复制';
+    setFeedback('代码已原样复制', 'success');
+    setTimeout(function () { copyButton.textContent = '复制代码'; }, 1600);
   }
 
-  async function pasteCode() {
-    if (!navigator.clipboard || !window.isSecureContext) {
-      setFeedback('请直接在编辑区按 Command + V 粘贴', 'error');
-      input.focus();
-      return;
-    }
-    try {
-      input.value = await navigator.clipboard.readText();
-      renderStats();
-      setFeedback('已原样读取剪贴板文本', 'success');
-      input.focus();
-    } catch (_) {
-      setFeedback('未获得剪贴板权限，请手动粘贴', 'error');
-      input.focus();
-    }
-  }
-
-  function clearCode() {
-    if (!input.value) return;
-    input.value = '';
-    renderStats();
-    setFeedback('内容已清空', 'neutral');
-    input.focus();
-  }
-
-  function downloadCode() {
-    var value = input.value;
-    if (!value) {
-      setFeedback('请先粘贴代码', 'error');
-      input.focus();
-      return;
-    }
-    var blob = new Blob([value], { type: 'text/plain;charset=utf-8' });
-    var url = URL.createObjectURL(blob);
-    var link = document.createElement('a');
-    link.href = url;
-    link.download = 'code-snippet.txt';
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    URL.revokeObjectURL(url);
-    setFeedback('已下载原始文本', 'success');
-  }
-
-  function bytesToBase64Url(bytes) {
-    var binary = '';
-    var chunkSize = 32768;
-    for (var index = 0; index < bytes.length; index += chunkSize) {
-      binary += String.fromCharCode.apply(null, bytes.subarray(index, index + chunkSize));
-    }
-    return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
-  }
-
-  function base64UrlToBytes(value) {
-    var normalized = value.replace(/-/g, '+').replace(/_/g, '/');
-    normalized += '='.repeat((4 - normalized.length % 4) % 4);
-    var binary = atob(normalized);
-    var bytes = new Uint8Array(binary.length);
-    for (var index = 0; index < binary.length; index += 1) {
-      bytes[index] = binary.charCodeAt(index);
-    }
-    return bytes;
-  }
-
-  async function compressCode(value) {
-    var bytes = new TextEncoder().encode(value);
-    if (!('CompressionStream' in window)) {
-      return 'plain.' + bytesToBase64Url(bytes);
-    }
-    var stream = new Blob([bytes]).stream().pipeThrough(new CompressionStream('gzip'));
-    var compressed = new Uint8Array(await new Response(stream).arrayBuffer());
-    return 'gzip.' + bytesToBase64Url(compressed);
-  }
-
-  async function restoreCode(payload) {
-    var separator = payload.indexOf('.');
-    if (separator < 0) throw new Error('链接格式不正确');
-    var mode = payload.slice(0, separator);
-    var bytes = base64UrlToBytes(payload.slice(separator + 1));
-    if (mode === 'gzip') {
-      if (!('DecompressionStream' in window)) throw new Error('当前浏览器不支持解压分享链接');
-      var stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
-      bytes = new Uint8Array(await new Response(stream).arrayBuffer());
-    } else if (mode !== 'plain') {
-      throw new Error('未知的链接格式');
-    }
-    return new TextDecoder().decode(bytes);
-  }
-
-  async function shareCode() {
-    var value = input.value;
-    if (!value) {
-      setFeedback('请先粘贴代码', 'error');
-      input.focus();
-      return;
-    }
-    shareButton.disabled = true;
-    shareButton.textContent = '正在生成';
-    try {
-      var payload = await compressCode(value);
-      var shareUrl = window.location.href.split('#')[0] + '#code=' + payload;
-      await writeClipboard(shareUrl);
-      shareButton.textContent = '链接已复制';
-      setFeedback('在另一台设备打开链接即可还原代码', 'success');
-      setTimeout(function () { shareButton.textContent = '复制跨设备链接'; }, 1800);
-    } catch (_) {
-      shareButton.textContent = '复制跨设备链接';
-      setFeedback('跨设备链接生成失败，请稍后重试', 'error');
-    } finally {
-      shareButton.disabled = false;
-    }
-  }
-
-  async function loadSharedCode() {
-    if (!window.location.hash.startsWith('#code=')) return;
-    try {
-      input.value = await restoreCode(window.location.hash.slice(6));
-      renderStats();
-      setFeedback('已从跨设备链接还原代码', 'success');
-    } catch (_) {
-      setFeedback('跨设备链接无效或已损坏', 'error');
-    }
-  }
-
-  input.addEventListener('input', renderStats);
-  input.addEventListener('scroll', function () {
-    lineNumbers.scrollTop = input.scrollTop;
+  list.addEventListener('click', function (event) {
+    var button = event.target.closest('[data-id]');
+    if (button) openSnippet(button.dataset.id);
   });
-  input.addEventListener('keydown', function (event) {
-    if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
-      event.preventDefault();
-      copyCode();
-    }
-  });
+  search.addEventListener('input', renderList);
+  titleInput.addEventListener('input', setDirty);
+  languageInput.addEventListener('change', setDirty);
+  codeInput.addEventListener('input', function () { renderStats(); setDirty(); });
+  codeInput.addEventListener('scroll', function () { lineNumbers.scrollTop = codeInput.scrollTop; });
+  newButton.addEventListener('click', createNew);
+  saveButton.addEventListener('click', saveSnippet);
+  deleteButton.addEventListener('click', deleteSnippet);
   copyButton.addEventListener('click', copyCode);
-  pasteButton.addEventListener('click', pasteCode);
-  clearButton.addEventListener('click', clearCode);
-  downloadButton.addEventListener('click', downloadCode);
-  shareButton.addEventListener('click', shareCode);
+  window.addEventListener('beforeunload', function (event) {
+    if (!dirty) return;
+    event.preventDefault();
+    event.returnValue = '';
+  });
 
   renderStats();
-  loadSharedCode();
+  loadSnippets();
 })();

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="代码中转站，原样粘贴并以纯文本原样复制代码。">
+  <meta name="description" content="公共代码中转站，在不同设备间保存、查看和复制代码。">
   <meta name="color-scheme" content="light dark">
   <title>代码中转站 | 日常信息台</title>
   <link rel="stylesheet" href="./assets/css/site.css">
@@ -27,71 +27,96 @@
     <header class="page-head code-page-head reveal">
       <div class="page-head-copy">
         <a class="back-link" href="./index.html">返回首页</a>
-        <h1 class="page-title">代码中转站</h1>
-        <p class="page-subtitle">原样粘贴，生成跨设备链接，在另一台设备打开后继续复制。</p>
+        <h1 class="page-title">公共代码库</h1>
+        <p class="page-subtitle">在任意设备保存、打开和复制代码。所有内容公开可见，请勿保存密码或密钥。</p>
+      </div>
+      <div class="page-actions">
+        <button class="button" id="new-snippet" type="button">新建代码</button>
       </div>
     </header>
 
-    <section class="code-workspace" aria-labelledby="code-label">
-      <div class="code-toolbar">
-        <div>
-          <label class="code-label" id="code-label" for="code-input">代码内容</label>
-          <p class="code-helper" id="code-helper">保留换行、缩进、空格与原始字符</p>
+    <section class="cloud-code-layout" aria-label="公共代码库">
+      <aside class="snippet-sidebar">
+        <div class="snippet-sidebar-head">
+          <label class="visually-hidden" for="snippet-search">搜索代码</label>
+          <input class="snippet-search" id="snippet-search" type="search" placeholder="搜索标题或语言" autocomplete="off">
+          <span class="snippet-total" id="snippet-total">正在连接云端</span>
         </div>
-        <div class="code-actions">
-          <button class="button secondary small" id="paste-code" type="button">粘贴</button>
-          <button class="button secondary small" id="download-code" type="button">下载</button>
-          <button class="button secondary small" id="clear-code" type="button">清空</button>
-          <button class="button secondary small" id="share-code" type="button">复制跨设备链接</button>
-          <button class="button small" id="copy-code" type="button">复制代码</button>
+        <div class="snippet-list" id="snippet-list" aria-live="polite">
+          <div class="snippet-list-state">正在读取公共代码...</div>
         </div>
-      </div>
+      </aside>
 
-      <div class="code-editor-shell">
-        <div class="code-gutter" aria-hidden="true" id="line-numbers">1</div>
-        <textarea
-          class="code-input"
-          id="code-input"
-          aria-describedby="code-helper"
-          aria-label="代码内容"
-          placeholder="在这里粘贴代码，内容不会被自动修改。"
-          spellcheck="false"
-          autocorrect="off"
-          autocapitalize="off"
-          autocomplete="off"
-          wrap="off"
-        ></textarea>
-      </div>
-
-      <div class="code-statusbar">
-        <div class="code-metrics" aria-label="内容统计">
-          <span><strong id="line-count">1</strong> 行</span>
-          <span><strong id="char-count">0</strong> 字符</span>
-          <span><strong id="byte-count">0</strong> 字节</span>
+      <section class="code-workspace cloud-editor" aria-labelledby="code-label">
+        <div class="code-toolbar cloud-code-toolbar">
+          <div class="snippet-fields">
+            <div class="snippet-field snippet-title-field">
+              <label for="snippet-title">标题</label>
+              <input id="snippet-title" maxlength="200" placeholder="例如：登录接口示例" autocomplete="off">
+            </div>
+            <div class="snippet-field">
+              <label for="snippet-language">语言</label>
+              <select id="snippet-language">
+                <option value="plaintext">纯文本</option>
+                <option value="html">HTML</option>
+                <option value="css">CSS</option>
+                <option value="javascript">JavaScript</option>
+                <option value="typescript">TypeScript</option>
+                <option value="python">Python</option>
+                <option value="java">Java</option>
+                <option value="php">PHP</option>
+                <option value="sql">SQL</option>
+                <option value="json">JSON</option>
+                <option value="shell">Shell</option>
+                <option value="other">其他</option>
+              </select>
+            </div>
+          </div>
+          <div class="code-actions">
+            <button class="button secondary small" id="delete-snippet" type="button" disabled>删除</button>
+            <button class="button secondary small" id="copy-code" type="button">复制代码</button>
+            <button class="button small" id="save-snippet" type="button">保存到云端</button>
+          </div>
         </div>
-        <div class="code-feedback" id="code-feedback" role="status" aria-live="polite">等待粘贴</div>
-      </div>
+
+        <div class="code-editor-shell">
+          <div class="code-gutter" aria-hidden="true" id="line-numbers">1</div>
+          <textarea
+            class="code-input"
+            id="code-input"
+            aria-describedby="code-helper"
+            aria-label="代码内容"
+            placeholder="在这里粘贴代码，保存后其他设备即可读取。"
+            spellcheck="false"
+            autocorrect="off"
+            autocapitalize="off"
+            autocomplete="off"
+            wrap="off"
+          ></textarea>
+        </div>
+
+        <div class="code-statusbar">
+          <div class="code-metrics" aria-label="内容统计">
+            <span><strong id="line-count">1</strong> 行</span>
+            <span><strong id="char-count">0</strong> 字符</span>
+            <span><strong id="byte-count">0</strong> 字节</span>
+          </div>
+          <div class="code-feedback" id="code-feedback" role="status" aria-live="polite">等待选择或新建代码</div>
+        </div>
+      </section>
     </section>
 
-    <section class="code-notes" aria-label="使用说明">
-      <div>
-        <h2>跨设备传输</h2>
-        <p>生成的链接携带完整代码。在手机或另一台电脑打开链接，代码会自动还原。</p>
-      </div>
-      <div>
-        <h2>原样中转</h2>
-        <p>不会执行 trim、替换、格式化或缩进修复，复制时直接读取完整内容。</p>
-      </div>
-    </section>
-    <p class="code-security-note">跨设备链接不是加密文件。任何获得链接的人都能读取其中的代码，请勿传输密码、令牌或 API 密钥。</p>
+    <p class="code-security-note" id="code-helper">这是公开代码库。任何访问者都可以查看、修改或删除内容，请勿保存密码、令牌、API 密钥或其他敏感信息。</p>
   </main>
 
   <footer class="site-footer">
     <span>© <span data-current-year></span> 日常信息台</span>
-    <span>代码通过分享链接在设备间传输</span>
+    <span>代码保存在公共云端数据库</span>
   </footer>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="./assets/js/common.js"></script>
+  <script src="./assets/js/supabase-config.js"></script>
   <script src="./assets/js/code-transfer.js"></script>
 </body>
 </html>
