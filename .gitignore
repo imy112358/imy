@@ -1,0 +1,10 @@
+.xfyun_iat.env
+output/
+__pycache__/
+*.pyc
+.DS_Store
+.idea/
+.venv/
+*.log
+*.har
+miniapp_flows.jsonl

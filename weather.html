@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="查询城市实时天气、空气质量、日出日落和生活指数。">
+  <meta name="color-scheme" content="light dark">
+  <title>今日天气 | 日常信息台</title>
+  <link rel="stylesheet" href="./assets/css/site.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到主要内容</a>
+  <header class="site-header">
+    <div class="nav-wrap">
+      <a class="brand" href="./index.html" aria-label="日常信息台首页"><span class="brand-mark">今</span><span>日常信息台</span></a>
+      <nav class="main-nav" aria-label="主要导航">
+        <a class="nav-link" href="./weather.html" aria-current="page">天气</a>
+        <a class="nav-link" href="./news.html">新闻</a>
+        <a class="nav-link" href="./moyu.html">日历</a>
+        <a class="nav-link" href="./code-transfer.html">代码</a>
+      </nav>
+      <button class="theme-toggle" type="button" data-theme-toggle>深色</button>
+    </div>
+  </header>
+
+  <main id="main" class="page">
+    <header class="page-head reveal">
+      <div class="page-head-copy">
+        <a class="back-link" href="./index.html">返回首页</a>
+        <h1 class="page-title">今日天气</h1>
+        <p class="page-subtitle">查询城市实况、空气质量与生活建议。</p>
+      </div>
+      <div class="page-actions">
+        <form class="city-form" id="city-form" role="search">
+          <label class="visually-hidden" for="city-input">城市名称</label>
+          <input class="city-input" id="city-input" name="city" type="search" autocomplete="address-level2" placeholder="输入城市，如杭州" maxlength="20">
+          <button class="button" type="submit">查询</button>
+        </form>
+      </div>
+    </header>
+
+    <section id="weather-content" aria-live="polite">
+      <article class="panel feature-card">
+        <div class="state">
+          <div class="skeleton skeleton-line short"></div>
+          <div class="skeleton" style="width: 52%; height: 120px"></div>
+          <div class="skeleton skeleton-line"></div>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <span>© <span data-current-year></span> 日常信息台</span>
+    <span>天气数据来自 <a href="https://60s.viki.moe" target="_blank" rel="noreferrer">VikiMoe 60s</a></span>
+  </footer>
+
+  <script src="./assets/js/common.js"></script>
+  <script src="./assets/js/weather.js"></script>
+</body>
+</html>

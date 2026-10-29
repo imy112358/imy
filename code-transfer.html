@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="代码中转站，原样粘贴并以纯文本原样复制代码。">
+  <meta name="color-scheme" content="light dark">
+  <title>代码中转站 | 日常信息台</title>
+  <link rel="stylesheet" href="./assets/css/site.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到主要内容</a>
+  <header class="site-header">
+    <div class="nav-wrap">
+      <a class="brand" href="./index.html" aria-label="日常信息台首页"><span class="brand-mark">今</span><span>日常信息台</span></a>
+      <nav class="main-nav" aria-label="主要导航">
+        <a class="nav-link" href="./weather.html">天气</a>
+        <a class="nav-link" href="./news.html">新闻</a>
+        <a class="nav-link" href="./moyu.html">日历</a>
+        <a class="nav-link" href="./code-transfer.html" aria-current="page">代码</a>
+      </nav>
+      <button class="theme-toggle" type="button" data-theme-toggle>深色</button>
+    </div>
+  </header>
+
+  <main id="main" class="page code-page">
+    <header class="page-head code-page-head reveal">
+      <div class="page-head-copy">
+        <a class="back-link" href="./index.html">返回首页</a>
+        <h1 class="page-title">代码中转站</h1>
+        <p class="page-subtitle">原样粘贴，原样复制。页面不会清理、格式化或上传你的代码。</p>
+      </div>
+    </header>
+
+    <section class="code-workspace" aria-labelledby="code-label">
+      <div class="code-toolbar">
+        <div>
+          <label class="code-label" id="code-label" for="code-input">代码内容</label>
+          <p class="code-helper" id="code-helper">保留换行、缩进、空格与原始字符</p>
+        </div>
+        <div class="code-actions">
+          <button class="button secondary small" id="paste-code" type="button">粘贴</button>
+          <button class="button secondary small" id="download-code" type="button">下载</button>
+          <button class="button secondary small" id="clear-code" type="button">清空</button>
+          <button class="button small" id="copy-code" type="button">复制代码</button>
+        </div>
+      </div>
+
+      <div class="code-editor-shell">
+        <div class="code-gutter" aria-hidden="true" id="line-numbers">1</div>
+        <textarea
+          class="code-input"
+          id="code-input"
+          aria-describedby="code-helper"
+          aria-label="代码内容"
+          placeholder="在这里粘贴代码，内容不会被自动修改。"
+          spellcheck="false"
+          autocorrect="off"
+          autocapitalize="off"
+          autocomplete="off"
+          wrap="off"
+        ></textarea>
+      </div>
+
+      <div class="code-statusbar">
+        <div class="code-metrics" aria-label="内容统计">
+          <span><strong id="line-count">1</strong> 行</span>
+          <span><strong id="char-count">0</strong> 字符</span>
+          <span><strong id="byte-count">0</strong> 字节</span>
+        </div>
+        <div class="code-feedback" id="code-feedback" role="status" aria-live="polite">等待粘贴</div>
+      </div>
+    </section>
+
+    <section class="code-notes" aria-label="使用说明">
+      <div>
+        <h2>原样中转</h2>
+        <p>复制操作直接读取文本框的完整内容，不执行 trim、替换、缩进修复或换行转换。</p>
+      </div>
+      <div>
+        <h2>只在本机</h2>
+        <p>代码仅存在于当前页面内存中。刷新或关闭页面后不会自动保存。</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <span>© <span data-current-year></span> 日常信息台</span>
+    <span>代码不会离开当前浏览器</span>
+  </footer>
+
+  <script src="./assets/js/common.js"></script>
+  <script src="./assets/js/code-transfer.js"></script>
+</body>
+</html>
