@@ -1648,10 +1648,16 @@ img {
 
   .code-actions {
     width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .code-actions .button {
-    flex: 1 1 auto;
+    width: 100%;
+    min-width: 0;
+    padding-right: 8px;
+    padding-left: 8px;
+    font-size: 0.75rem;
   }
 
   .code-editor-shell {

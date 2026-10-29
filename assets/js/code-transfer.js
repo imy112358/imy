@@ -2,10 +2,9 @@
   'use strict';
 
   var config = window.DailyDeskSupabase || {};
-  var factory = window.supabase;
-  var client = factory && config.url && config.publishableKey
-    ? factory.createClient(config.url, config.publishableKey)
-    : null;
+  var apiUrl = config.url && config.publishableKey
+    ? config.url.replace(/\/$/, '') + '/rest/v1/code_snippets'
+    : '';
   var snippets = [];
   var activeId = null;
   var dirty = false;
@@ -29,6 +28,34 @@
 
   function escapeHtml(value) {
     return window.DailyDesk.escapeHtml(value);
+  }
+
+  async function cloudRequest(query, options) {
+    if (!apiUrl) throw new Error('云端配置缺失');
+    var requestOptions = options || {};
+    var headers = {
+      apikey: config.publishableKey,
+      'Content-Type': 'application/json'
+    };
+    Object.keys(requestOptions.headers || {}).forEach(function (name) {
+      headers[name] = requestOptions.headers[name];
+    });
+    var response;
+    try {
+      response = await fetch(apiUrl + (query || ''), {
+        method: requestOptions.method || 'GET',
+        headers: headers,
+        body: requestOptions.body ? JSON.stringify(requestOptions.body) : undefined
+      });
+    } catch (_) {
+      throw new Error('网络连接失败，请检查手机网络后重试');
+    }
+    var text = await response.text();
+    var data = text ? JSON.parse(text) : null;
+    if (!response.ok) {
+      throw new Error((data && (data.message || data.hint)) || '请求失败（' + response.status + '）');
+    }
+    return data;
   }
 
   function formatUpdatedAt(value) {
@@ -55,7 +82,9 @@
     var lines = value.length ? value.split('\n').length : 1;
     lineCount.textContent = lines;
     charCount.textContent = Array.from(value).length;
-    byteCount.textContent = new TextEncoder().encode(value).length;
+    byteCount.textContent = typeof TextEncoder === 'function'
+      ? new TextEncoder().encode(value).length
+      : unescape(encodeURIComponent(value)).length;
     lineNumbers.textContent = Array.from({ length: lines }, function (_, index) {
       return index + 1;
     }).join('\n');
@@ -122,20 +151,19 @@
   }
 
   async function loadSnippets() {
-    if (!client) {
+    if (!apiUrl) {
       list.innerHTML = '<div class="snippet-list-state error">云端配置加载失败</div>';
       setFeedback('无法连接云端数据库', 'error', true);
       return;
     }
-    var result = await client.from('code_snippets')
-      .select('id,title,language,content,created_at,updated_at')
-      .order('updated_at', { ascending: false });
-    if (result.error) {
+    try {
+      snippets = await cloudRequest('?select=id,title,language,content,created_at,updated_at&order=updated_at.desc');
+    } catch (error) {
       list.innerHTML = '<div class="snippet-list-state error">云端读取失败，请稍后刷新</div>';
-      setFeedback('读取失败：' + result.error.message, 'error', true);
+      setFeedback('读取失败：' + error.message, 'error', true);
       return;
     }
-    snippets = result.data || [];
+    snippets = snippets || [];
     renderList();
     var requestedId = new URLSearchParams(window.location.search).get('id');
     if (requestedId && snippets.some(function (item) { return item.id === requestedId; })) openSnippet(requestedId);
@@ -150,20 +178,33 @@
       titleInput.focus();
       return;
     }
-    if (!client) return;
+    if (!apiUrl) {
+      setFeedback('云端配置加载失败', 'error', true);
+      return;
+    }
     saveButton.disabled = true;
     saveButton.textContent = '正在保存';
     var payload = { title: title, language: languageInput.value, content: codeInput.value };
-    var result = activeId
-      ? await client.from('code_snippets').update(payload).eq('id', activeId).select().single()
-      : await client.from('code_snippets').insert(payload).select().single();
-    saveButton.disabled = false;
-    saveButton.textContent = '保存到云端';
-    if (result.error) {
-      setFeedback('保存失败：' + result.error.message, 'error', true);
+    var rows;
+    try {
+      rows = await cloudRequest(activeId ? '?id=eq.' + encodeURIComponent(activeId) : '', {
+        method: activeId ? 'PATCH' : 'POST',
+        headers: { Prefer: 'return=representation' },
+        body: payload
+      });
+    } catch (error) {
+      saveButton.disabled = false;
+      saveButton.textContent = '保存到云端';
+      setFeedback('保存失败：' + error.message, 'error', true);
       return;
     }
-    var saved = result.data;
+    saveButton.disabled = false;
+    saveButton.textContent = '保存到云端';
+    var saved = rows && rows[0];
+    if (!saved) {
+      setFeedback('保存失败：云端没有返回数据', 'error', true);
+      return;
+    }
     snippets = snippets.filter(function (item) { return item.id !== saved.id; });
     snippets.unshift(saved);
     activeId = saved.id;
@@ -175,14 +216,15 @@
   }
 
   async function deleteSnippet() {
-    if (!activeId || !client) return;
+    if (!activeId || !apiUrl) return;
     var current = snippets.find(function (item) { return item.id === activeId; });
     if (!window.confirm('确定删除“' + (current ? current.title : '这段代码') + '”吗？此操作无法撤销。')) return;
     deleteButton.disabled = true;
-    var result = await client.from('code_snippets').delete().eq('id', activeId);
-    if (result.error) {
+    try {
+      await cloudRequest('?id=eq.' + encodeURIComponent(activeId), { method: 'DELETE' });
+    } catch (error) {
       deleteButton.disabled = false;
-      setFeedback('删除失败：' + result.error.message, 'error', true);
+      setFeedback('删除失败：' + error.message, 'error', true);
       return;
     }
     snippets = snippets.filter(function (item) { return item.id !== activeId; });
