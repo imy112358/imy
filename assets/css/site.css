@@ -1223,6 +1223,17 @@ img {
   font-size: 0.82rem;
 }
 
+.code-security-note {
+  max-width: 920px;
+  margin: 20px 0 0 auto;
+  padding: 14px 16px;
+  border-left: 3px solid var(--warn);
+  border-radius: 0 var(--radius-control) var(--radius-control) 0;
+  color: var(--text-soft);
+  background: color-mix(in srgb, var(--surface-solid) 74%, var(--warn));
+  font-size: 0.78rem;
+}
+
 .site-footer {
   width: var(--page);
   margin: 0 auto;

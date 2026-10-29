@@ -28,7 +28,7 @@
       <div class="page-head-copy">
         <a class="back-link" href="./index.html">返回首页</a>
         <h1 class="page-title">代码中转站</h1>
-        <p class="page-subtitle">原样粘贴，原样复制。页面不会清理、格式化或上传你的代码。</p>
+        <p class="page-subtitle">原样粘贴，生成跨设备链接，在另一台设备打开后继续复制。</p>
       </div>
     </header>
 
@@ -42,6 +42,7 @@
           <button class="button secondary small" id="paste-code" type="button">粘贴</button>
           <button class="button secondary small" id="download-code" type="button">下载</button>
           <button class="button secondary small" id="clear-code" type="button">清空</button>
+          <button class="button secondary small" id="share-code" type="button">复制跨设备链接</button>
           <button class="button small" id="copy-code" type="button">复制代码</button>
         </div>
       </div>
@@ -74,19 +75,20 @@
 
     <section class="code-notes" aria-label="使用说明">
       <div>
-        <h2>原样中转</h2>
-        <p>复制操作直接读取文本框的完整内容，不执行 trim、替换、缩进修复或换行转换。</p>
+        <h2>跨设备传输</h2>
+        <p>生成的链接携带完整代码。在手机或另一台电脑打开链接，代码会自动还原。</p>
       </div>
       <div>
-        <h2>只在本机</h2>
-        <p>代码仅存在于当前页面内存中。刷新或关闭页面后不会自动保存。</p>
+        <h2>原样中转</h2>
+        <p>不会执行 trim、替换、格式化或缩进修复，复制时直接读取完整内容。</p>
       </div>
     </section>
+    <p class="code-security-note">跨设备链接不是加密文件。任何获得链接的人都能读取其中的代码，请勿传输密码、令牌或 API 密钥。</p>
   </main>
 
   <footer class="site-footer">
     <span>© <span data-current-year></span> 日常信息台</span>
-    <span>代码不会离开当前浏览器</span>
+    <span>代码通过分享链接在设备间传输</span>
   </footer>
 
   <script src="./assets/js/common.js"></script>
