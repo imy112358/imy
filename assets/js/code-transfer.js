@@ -2,9 +2,9 @@
   'use strict';
 
   var config = window.DailyDeskSupabase || {};
-  var apiUrl = config.url && config.publishableKey
+  var apiUrl = config.proxyUrl || (config.url && config.publishableKey
     ? config.url.replace(/\/$/, '') + '/rest/v1/code_snippets'
-    : '';
+    : '');
   var snippets = [];
   var activeId = null;
   var dirty = false;
@@ -33,10 +33,8 @@
   async function cloudRequest(query, options) {
     if (!apiUrl) throw new Error('云端配置缺失');
     var requestOptions = options || {};
-    var headers = {
-      apikey: config.publishableKey,
-      'Content-Type': 'application/json'
-    };
+    var headers = { 'Content-Type': 'application/json' };
+    if (!config.proxyUrl) headers.apikey = config.publishableKey;
     Object.keys(requestOptions.headers || {}).forEach(function (name) {
       headers[name] = requestOptions.headers[name];
     });
