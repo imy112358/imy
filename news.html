@@ -6,29 +6,19 @@
   <meta name="description" content="每天 60 秒读懂十五条重要新闻。">
   <meta name="color-scheme" content="light dark">
   <title>新闻 60 秒 | 日常信息台</title>
-  <link rel="stylesheet" href="./assets/css/site.css">
+  <link rel="stylesheet" href="./assets/css/site.css?v=20261030-ui">
+  <link rel="stylesheet" href="./assets/css/workspace.css?v=20261030-ui">
+  <script src="./assets/js/navigation.js?v=20261030-ui" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">跳到主要内容</a>
-  <header class="site-header">
-    <div class="nav-wrap">
-      <a class="brand" href="./index.html" aria-label="日常信息台首页"><span class="brand-mark">今</span><span>日常信息台</span></a>
-      <nav class="main-nav" aria-label="主要导航">
-        <a class="nav-link" href="./weather.html">天气</a>
-        <a class="nav-link" href="./news.html" aria-current="page">新闻</a>
-        <a class="nav-link" href="./moyu.html">日历</a>
-        <a class="nav-link" href="./code-transfer.html">代码</a>
-      </nav>
-      <button class="theme-toggle" type="button" data-theme-toggle>深色</button>
-    </div>
-  </header>
+  <header class="site-header" data-site-navigation></header>
 
   <main id="main" class="page">
     <header class="page-head reveal">
       <div class="page-head-copy">
         <a class="back-link" href="./index.html">返回首页</a>
         <h1 class="page-title">新闻 60 秒</h1>
-        <p class="page-subtitle">十五条要闻，一次读完，不让信息淹没注意力。</p>
       </div>
       <div class="page-actions">
         <button class="button secondary" id="copy-news" type="button">复制文案</button>

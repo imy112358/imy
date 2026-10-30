@@ -6,51 +6,31 @@
   <meta name="description" content="每日信息台，聚合今日天气、新闻 60 秒和摸鱼日历。">
   <meta name="color-scheme" content="light dark">
   <title>日常信息台</title>
-  <link rel="stylesheet" href="./assets/css/site.css">
+  <link rel="stylesheet" href="./assets/css/site.css?v=20261030-ui">
+  <link rel="stylesheet" href="./assets/css/workspace.css?v=20261030-ui">
+  <script src="./assets/js/navigation.js?v=20261030-ui" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">跳到主要内容</a>
-  <header class="site-header">
-    <div class="nav-wrap">
-      <a class="brand" href="./index.html" aria-label="日常信息台首页">
-        <span class="brand-mark">今</span>
-        <span>日常信息台</span>
-      </a>
-      <nav class="main-nav" aria-label="主要导航">
-        <a class="nav-link" href="./weather.html">天气</a>
-        <a class="nav-link" href="./news.html">新闻</a>
-        <a class="nav-link" href="./moyu.html">日历</a>
-        <a class="nav-link" href="./code-transfer.html">代码</a>
-      </nav>
-      <button class="theme-toggle" type="button" data-theme-toggle>深色</button>
-    </div>
-  </header>
+  <header class="site-header" data-site-navigation></header>
 
   <main id="main" class="page">
     <section class="home-hero">
-      <div class="hero-copy reveal">
-        <p class="eyebrow">Daily briefing</p>
-        <h1 class="hero-title">今天，<br class="mobile-break">先看重要的</h1>
-        <p class="hero-subtitle">天气、要闻和休息倒计时，三分钟掌握今天。</p>
-        <div class="hero-actions">
-          <a class="button" href="#today">查看今日信息</a>
-          <a class="button secondary" href="./news.html">阅读新闻</a>
-        </div>
+      <div class="hero-copy">
+        <p class="eyebrow">我的日常</p>
+        <h1 class="hero-title">今天，也从容一点。</h1>
+        <p class="home-date" id="poster-full-date"></p>
       </div>
-      <div class="hero-visual reveal" style="animation-delay: 100ms">
-        <article class="date-poster" aria-label="今日日期">
-          <div class="date-poster-month" id="poster-month">October</div>
-          <div class="date-poster-day" id="poster-day">29</div>
-          <div class="date-poster-weekday" id="poster-weekday">星期四</div>
-          <div class="date-poster-note" id="poster-full-date">2026年10月29日</div>
-        </article>
-      </div>
+      <article class="date-poster" aria-label="今日日期">
+        <div class="date-poster-month" id="poster-month"></div>
+        <div class="date-poster-day" id="poster-day"></div>
+        <div class="date-poster-weekday" id="poster-weekday"></div>
+      </article>
     </section>
 
     <section class="section" id="today">
       <div class="section-heading">
-        <h2>今天的三个切面</h2>
-        <p>实时数据优先，网络异常时自动显示最近一次缓存。</p>
+        <h2>今日概览</h2>
       </div>
 
       <div class="dashboard-grid">
@@ -95,6 +75,11 @@
             </div>
           </div>
         </article>
+        <a class="panel tool-preview" href="./code-transfer.html">
+          <span class="panel-label">随手工具</span>
+          <span class="tool-symbol" aria-hidden="true">&lt;/&gt;</span>
+          <span class="tool-bottom"><strong>代码中转站</strong><span aria-hidden="true">↗</span></span>
+        </a>
       </div>
     </section>
   </main>

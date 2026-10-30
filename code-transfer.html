@@ -11,29 +11,19 @@
     }
   </script>
   <title>代码中转站 | 日常信息台</title>
-  <link rel="stylesheet" href="./assets/css/site.css?v=20261030-1">
+  <link rel="stylesheet" href="./assets/css/site.css?v=20261030-ui">
+  <link rel="stylesheet" href="./assets/css/workspace.css?v=20261030-ui">
+  <script src="./assets/js/navigation.js?v=20261030-ui" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">跳到主要内容</a>
-  <header class="site-header">
-    <div class="nav-wrap">
-      <a class="brand" href="./index.html" aria-label="日常信息台首页"><span class="brand-mark">今</span><span>日常信息台</span></a>
-      <nav class="main-nav" aria-label="主要导航">
-        <a class="nav-link" href="./weather.html">天气</a>
-        <a class="nav-link" href="./news.html">新闻</a>
-        <a class="nav-link" href="./moyu.html">日历</a>
-        <a class="nav-link" href="./code-transfer.html" aria-current="page">代码</a>
-      </nav>
-      <button class="theme-toggle" type="button" data-theme-toggle>深色</button>
-    </div>
-  </header>
+  <header class="site-header" data-site-navigation></header>
 
   <main id="main" class="page code-page">
     <header class="page-head code-page-head reveal">
       <div class="page-head-copy">
         <a class="back-link" href="./index.html">返回首页</a>
         <h1 class="page-title">公共代码库</h1>
-        <p class="page-subtitle">在任意设备保存、打开和复制代码。所有内容公开可见，请勿保存密码或密钥。</p>
       </div>
       <div class="page-actions">
         <button class="button" id="new-snippet" type="button">新建代码</button>
@@ -52,12 +42,12 @@
         </div>
       </aside>
 
-      <section class="code-workspace cloud-editor" aria-labelledby="code-label">
+      <section class="code-workspace cloud-editor" aria-label="代码编辑器">
         <div class="code-toolbar cloud-code-toolbar">
           <div class="snippet-fields">
             <div class="snippet-field snippet-title-field">
               <label for="snippet-title">标题</label>
-              <input id="snippet-title" maxlength="200" placeholder="例如：登录接口示例" autocomplete="off">
+              <input id="snippet-title" maxlength="200" placeholder="未命名代码" autocomplete="off">
             </div>
             <div class="snippet-field">
               <label for="snippet-language">语言</label>
@@ -91,7 +81,7 @@
             id="code-input"
             aria-describedby="code-helper"
             aria-label="代码内容"
-            placeholder="在这里粘贴代码，保存后其他设备即可读取。"
+            placeholder="在这里粘贴代码…"
             spellcheck="false"
             autocorrect="off"
             autocapitalize="off"
@@ -111,12 +101,12 @@
       </section>
     </section>
 
-    <p class="code-security-note" id="code-helper">这是公开代码库。任何访问者都可以查看、修改或删除内容，请勿保存密码、令牌、API 密钥或其他敏感信息。</p>
+    <p class="code-security-note" id="code-helper">公开可编辑 · 请勿保存密码或密钥。</p>
   </main>
 
   <footer class="site-footer">
     <span>© <span data-current-year></span> 日常信息台</span>
-    <span>代码保存在公共云端数据库</span>
+    <span>公共代码库</span>
   </footer>
 
   <script src="./assets/js/common.js?v=20261030-1"></script>
