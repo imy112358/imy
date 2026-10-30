@@ -5,8 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="公共代码中转站，在不同设备间保存、查看和复制代码。">
   <meta name="color-scheme" content="light dark">
+  <script>
+    if (location.protocol === 'http:' && /(^|\.)aifather\.top$/i.test(location.hostname)) {
+      location.replace('https://' + location.host + location.pathname + location.search + location.hash);
+    }
+  </script>
   <title>代码中转站 | 日常信息台</title>
-  <link rel="stylesheet" href="./assets/css/site.css?v=20261029-3">
+  <link rel="stylesheet" href="./assets/css/site.css?v=20261030-1">
 </head>
 <body>
   <a class="skip-link" href="#main">跳到主要内容</a>
@@ -114,8 +119,8 @@
     <span>代码保存在公共云端数据库</span>
   </footer>
 
-  <script src="./assets/js/common.js?v=20261029-3"></script>
-  <script src="./assets/js/supabase-config.js?v=20261029-3"></script>
-  <script src="./assets/js/code-transfer.js?v=20261029-3"></script>
+  <script src="./assets/js/common.js?v=20261030-1"></script>
+  <script src="./assets/js/supabase-config.js?v=20261030-1"></script>
+  <script src="./assets/js/code-transfer.js?v=20261030-1"></script>
 </body>
 </html>
